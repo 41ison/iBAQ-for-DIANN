@@ -59,6 +59,37 @@ iBAQ <- DIAgui::get_iBAQ(
 write_tsv(iBAQ, "DIANN_iBAQ_values.tsv")
 ```
 
+### Extracting the relative iBAQ for each sample
+
+```
+df_riBAQ <- iBAQ %>%
+    dplyr::select(Precursor.Id, Protein.Group, Genes, starts_with("iBAQ")) %>%
+      pivot_longer(
+        -c(Precursor.Id, Protein.Group, Genes),
+          names_to = "sample", values_to = "iBAQ"
+  ) %>%
+  group_by(sample) %>%
+  na.omit() %>%
+  mutate(sum_iBAQ = sum(iBAQ)) %>%
+  ungroup() %>%
+  mutate(riBAQ = (iBAQ / sum_iBAQ) * 100)
+```
+
+Plot the relative iBAQ distribution per sample and save the figure
+
+```
+riBAQ_plot <- df_riBAQ %>%
+  ggplot() +
+  geom_boxplot(aes(x = sample, y = riBAQ)) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(y = "Relative iBAQ", x = NULL)
+
+ggsave("riBAQ_plot.png",
+    riBAQ_plot, width = 10, 
+    height = 10, dpi = 300)
+```
+
 ## Additional features that can be interesting
 
 ### Annotate the protease inhibitors and peptidases found in the dataset.
