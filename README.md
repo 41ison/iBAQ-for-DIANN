@@ -62,7 +62,7 @@ write_tsv(iBAQ, "DIANN_iBAQ_values.tsv")
 ## Additional features that can be interesting
 
 ### Annotate the protease inhibitors and peptidases found in the dataset.
-Use the **IDmapping** in the **[UniProtKB]**(https://www.uniprot.org) to recover the protein families information for each ID.
+Use the **IDmapping** in the [**UniProtKB**](https://www.uniprot.org) to recover the protein families information for each ID.
 Dowload the query as **.tsv** file with the usefull information.
 
 ```
