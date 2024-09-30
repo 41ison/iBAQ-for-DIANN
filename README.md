@@ -2,7 +2,7 @@
 
 The following packages are required to run this script:
 
-```
+```r
 library(arrow)
 library(here)
 library(tidyverse)
@@ -11,7 +11,7 @@ library(DIAgui)
 
 ### Load and filter the report.parquet file from DIANN search
 
-```
+```r
 diann_report <- arrow::read_parquet("report.parquet") %>%
     dplyr::filter(PG.MaxLFQ.Quality >= 0.75 & Lib.PG.Q.Value <= 0.01 & Lib.Q.Value <= 0.01 & PG.Q.Value <= 0.01) %>%
     dplyr::mutate(File.Name = Run)
@@ -22,7 +22,7 @@ We get the gene names and peptides from the diann_report.
 
 ⚠️ the function `diann_matrix` used here is not the same from `diann` package. It comes from the `DIAgui` package.
 
-```
+```r
 unique_genes <- DIAgui::diann_matrix(diann_report,
     id.header = "Precursor.Id",
     quantity.header = "Precursor.Normalised",
@@ -34,7 +34,7 @@ unique_genes <- DIAgui::diann_matrix(diann_report,
 ### Get the protein sequences and iBAQ values
 The fasta file needs to be in the same folder as the script, so we can use the `getallseq` function properly.
 
-```
+```r
 sequence_list <- DIAgui::getallseq(
     spec = "Homo sapiens",
     pr_id = unique_genes$Protein.Group,
@@ -61,7 +61,7 @@ write_tsv(iBAQ, "DIANN_iBAQ_values.tsv")
 
 ### Extracting the relative iBAQ for each sample
 
-```
+```r
 df_riBAQ <- iBAQ %>%
     dplyr::select(Precursor.Id, Protein.Group, Genes, starts_with("iBAQ")) %>%
       pivot_longer(
@@ -77,7 +77,7 @@ df_riBAQ <- iBAQ %>%
 
 Plot the relative iBAQ distribution per sample and save the figure
 
-```
+```r
 riBAQ_plot <- df_riBAQ %>%
   ggplot() +
   geom_boxplot(aes(x = sample, y = riBAQ)) +
@@ -96,7 +96,7 @@ ggsave("riBAQ_plot.png",
 Use the **IDmapping** in the [**UniProtKB**](https://www.uniprot.org) to recover the protein families information for each ID.
 Dowload the query as **.tsv** file with the usefull information.
 
-```
+```r
 annotated_iBAQ <- iBAQ %>%
   left_join(read_tsv("idmapping_2024_09_19.tsv"), 
                         by = join_by(Protein.Group == From)) %>%
@@ -111,7 +111,7 @@ View(annotated_iBAQ)
 
 ### plot the iBAQ values idstribution higlihting the protease inhibitors and peptidases
 
-```
+```r
 boxplot_iBAQ <- annotated_iBAQ %>%
   dplyr::select(Protein.Group, Genes, protease_or_inhibitor, starts_with("iBAQ")) %>%
   pivot_longer(-c(Protein.Group, Genes, protease_or_inhibitor), names_to = "sample", values_to = "iBAQ") %>%
